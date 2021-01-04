@@ -13,12 +13,17 @@ class Board:
     def __init__(self):
         return
 
-    def isMoveBlocked(self, fromLoc: str, toLoc: str) -> bool:
-        fromY = int(fromLoc[1]) - 1
-        fromX = ord(fromLoc[0]) - 65
-        toY = int(toLoc[1]) - 1
-        toX = ord(toLoc[0]) - 65
-        piece = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65].upper()
+    def translateLocation(self, location: str) -> tuple:
+        y = int(location[1]) - 1
+        x = ord(location[0]) - 65
+        return (y,x)
+
+    def isMoveBlocked(self, fromLoc: tuple, toLoc: tuple) -> bool:
+        fromY = fromLoc[0]
+        fromX = fromLoc[1]
+        toY = toLoc[0]
+        toX = toLoc[1]
+        piece = self.board[fromY][fromX].upper()
 
         if piece != "N":
             if toX - fromX == 0:
@@ -37,12 +42,12 @@ class Board:
         return False
 
     # Assumes that the locations are valid locations on the board
-    def isMoveShapeLegal(self, fromLoc: str, toLoc: str) -> bool:
-        fromY = int(fromLoc[1]) - 1
-        fromX = ord(fromLoc[0]) - 65
-        toY = int(toLoc[1]) - 1
-        toX = ord(toLoc[0]) - 65
-        piece = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65]
+    def isMoveShapeLegal(self, fromTuple: tuple, toTuple: tuple) -> bool:
+        fromY = fromTuple[0]
+        fromX = fromTuple[1]
+        toY = toTuple[0]
+        toX = toTuple[1]
+        piece = self.board[fromY][fromX]
         upperPiece = piece.upper()
         if upperPiece == "R" or upperPiece == "Q":
             if (fromX == toX and fromY != toY) or (fromY == toY and fromX != toX):
@@ -78,19 +83,39 @@ class Board:
                 return True
         return False
 
+    def isKingInCheck(self, whiteKing: bool):
+        kingLoc = (-1,-1)
+        for y in range(0,8):
+            for x in range(0,8):
+                piece = self.board[y][x]
+                if(piece.upper() == "K" and piece.isupper() != whiteKing):
+                    kingLoc = (y,x)
+        for y in range(0,8):
+            for x in range(0,8):
+                piece = self.board[y][x]
+                # if the piece is upper case then it is black and can check the white king
+                # if the piece is lowercase then it is white and can check the black king
+                if(piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc)) and not self.isMoveBlocked((y,x), kingLoc):
+                    return True
+        return False
+
+
     def move(self, fromLoc: str, toLoc: str):
-        movedPiece = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65]
-        takenPiece = self.board[int(toLoc[1]) - 1][ord(toLoc[0]) - 65]
+        fromTuple = self.translateLocation(fromLoc)
+        toTuple = self.translateLocation(toLoc)
+
+        movedPiece = self.board[fromTuple[0]][fromTuple[1]]
+        takenPiece = self.board[toTuple[0]][toTuple[1]]
 
         # Cannot take a piece of the same color
         if takenPiece != "":
             if movedPiece.isupper() == takenPiece.isupper():
                 return
 
-        if self.isMoveShapeLegal(fromLoc, toLoc) and not self.isMoveBlocked(fromLoc, toLoc):
+        if self.isMoveShapeLegal(fromTuple, toTuple) and not self.isMoveBlocked(fromTuple, toTuple):
             # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
-            self.board[int(toLoc[1]) - 1][ord(toLoc[0]) - 65] = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65]
-            self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65] = ""
+            self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
+            self.board[fromTuple[0]][fromTuple[1]] = ""
 
     def __str__(self) -> str:
         answer = ""
