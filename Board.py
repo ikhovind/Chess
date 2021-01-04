@@ -13,6 +13,29 @@ class Board:
     def __init__(self):
         return
 
+    def isMoveBlocked(self, fromLoc: str, toLoc: str) -> bool:
+        fromY = int(fromLoc[1]) - 1
+        fromX = ord(fromLoc[0]) - 65
+        toY = int(toLoc[1]) - 1
+        toX = ord(toLoc[0]) - 65
+        piece = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65].upper()
+
+        if piece != "N":
+            if toX - fromX == 0:
+                for y in range(fromY+1, toY, 1 if (toY > fromY) else -1):
+                    if self.board[y][fromX] != "":
+                        return True
+            if toY - fromY == 0:
+                for x in range(fromX+1, toX, 1 if (toX > fromX) else -1):
+                    if self.board[fromY][x] != "":
+                        return True
+            else:
+                for y in range(fromY+1, toY, 1 if (toY > fromY) else -1):
+                    for x in range(fromX, toX, 1 if (toX > fromX) else -1):
+                        if self.board[y][x] != "":
+                            return True
+        return False
+
     # Assumes that the locations are valid locations on the board
     def isMoveShapeLegal(self, fromLoc: str, toLoc: str) -> bool:
         fromY = int(fromLoc[1]) - 1
@@ -56,7 +79,15 @@ class Board:
         return False
 
     def move(self, fromLoc: str, toLoc: str):
-        if self.isMoveShapeLegal(fromLoc, toLoc):
+        movedPiece = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65]
+        takenPiece = self.board[int(toLoc[1]) - 1][ord(toLoc[0]) - 65]
+
+        # Cannot take a piece of the same color
+        if takenPiece != "":
+            if movedPiece.isupper() == takenPiece.isupper():
+                return
+
+        if self.isMoveShapeLegal(fromLoc, toLoc) and not self.isMoveBlocked(fromLoc, toLoc):
             # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
             self.board[int(toLoc[1]) - 1][ord(toLoc[0]) - 65] = self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65]
             self.board[int(fromLoc[1]) - 1][ord(fromLoc[0]) - 65] = ""
