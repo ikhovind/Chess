@@ -27,16 +27,16 @@ class Board:
 
         if piece != "N":
             if toX - fromX == 0:
-                for y in range(fromY+1, toY, 1 if (toY > fromY) else -1):
+                for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
                     if self.board[y][fromX] != "":
                         return True
             if toY - fromY == 0:
-                for x in range(fromX+1, toX, 1 if (toX > fromX) else -1):
+                for x in range(fromX + (1 if (toX > fromX) else -1), toX, 1 if (toX > fromX) else -1):
                     if self.board[fromY][x] != "":
                         return True
             else:
-                for y in range(fromY+1, toY, 1 if (toY > fromY) else -1):
-                    for x in range(fromX, toX, 1 if (toX > fromX) else -1):
+                for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
+                    for x in range(fromX + (1 if (toX > fromX) else -1), toX, 1 if (toX > fromX) else -1):
                         if self.board[y][x] != "":
                             return True
         return False
@@ -65,8 +65,14 @@ class Board:
             else:
                 return False
         if upperPiece == "K":
-            if (abs(fromX - toX) == 1) or (abs(fromY - toY) == 1):
-                return True
+            if (abs(fromX - toX) == 1) :
+                # horizontal move or diagonal move
+                if((abs(fromY - toY) == 1) or (abs(fromY - toY) == 0)):
+                    return True
+            if (abs(fromY - toY) == 1):
+                # vertical move
+                if (abs(fromX - toX) == 0):
+                    return True
             else:
                 return False
         # if the pawn is white
@@ -79,7 +85,7 @@ class Board:
         if piece == "P":
             if fromY - toY == 1 and fromX == toX:
                 return True
-            if fromY == 7 and fromY - toY == 2 and fromX == toX:
+            if fromY == 6 and fromY - toY == 2 and fromX == toX:
                 return True
         return False
 
@@ -88,14 +94,15 @@ class Board:
         for y in range(0,8):
             for x in range(0,8):
                 piece = self.board[y][x]
-                if(piece.upper() == "K" and piece.isupper() != whiteKing):
+                if piece.upper() == "K" and piece.isupper() != whiteKing:
                     kingLoc = (y,x)
         for y in range(0,8):
             for x in range(0,8):
                 piece = self.board[y][x]
                 # if the piece is upper case then it is black and can check the white king
                 # if the piece is lowercase then it is white and can check the black king
-                if(piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc)) and not self.isMoveBlocked((y,x), kingLoc):
+                if piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc) and not self.isMoveBlocked((y,x), kingLoc):
+                    print((y,x))
                     return True
         return False
 
@@ -114,8 +121,14 @@ class Board:
 
         if self.isMoveShapeLegal(fromTuple, toTuple) and not self.isMoveBlocked(fromTuple, toTuple):
             # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
+            temp = self.board[toTuple[0]][toTuple[1]]
             self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
             self.board[fromTuple[0]][fromTuple[1]] = ""
+            # if the king is in check after the move then the move is invalid
+            if self.isKingInCheck(not movedPiece.isupper()):
+                self.board[fromTuple[0]][fromTuple[1]] = self.board[toTuple[0]][toTuple[1]]
+                self.board[toTuple[0]][toTuple[1]] = temp
+
 
     def __str__(self) -> str:
         answer = ""
