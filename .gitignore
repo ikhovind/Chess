@@ -27,7 +27,7 @@ __pycache__/
 build/
 venv/
 develop-eggs/
-.idea/* 
+.idea/*
 dist/
 downloads/
 eggs/
