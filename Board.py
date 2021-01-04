@@ -2,6 +2,7 @@ import re
 import Pieces
 
 class Board:
+    # uppercase are black and lowercase are white
     board = [
         ["r", "n", "b", "q", "k", "b", "n", "r"],
         ["p", "p", "p", "p", "p", "p", "p", "p"],
@@ -15,7 +16,7 @@ class Board:
 
     def __init__(self):
         return
-
+    # Translates from chess notation (A-H and 1-8) to array index (0-7)
     def translateLocation(self, location: str) -> tuple:
         y = int(location[1]) - 1
         # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
@@ -39,8 +40,8 @@ class Board:
                     if self.board[fromY][x] != "":
                         return True
             else:
+                x = fromX + (1 if (toX > fromX) else -1)
                 for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
-                    x = fromX + (1 if (toX > fromX) else -1)
                     if self.board[y][x] != "":
                         return True
                     x += 1
@@ -103,42 +104,42 @@ class Board:
         for y in range(0,8):
             for x in range(0,8):
                 piece = self.board[y][x]
+                # if it is the king and has the same colour as parameter
                 if piece.upper() == "K" and piece.isupper() != whiteKing:
                     kingLoc = (y,x)
-        for y in range(0,8):
-            for x in range(0,8):
-                piece = self.board[y][x]
+        for a in range(0,8):
+            for b in range(0,8):
+                piece = self.board[a][b]
                 # if the piece is upper case then it is black and can check the white king
                 # if the piece is lowercase then it is white and can check the black king
-                if piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc, True) and not self.isMoveBlocked((y,x), kingLoc):
+                if piece.isupper() == whiteKing and self.isMoveShapeLegal((a,b),kingLoc, True) and not self.isMoveBlocked((a,b), kingLoc):
                     return True
         return False
 
+    # checks all possible moves to see if there is some way to get the king out of check
     def isCheckMate(self, whiteKing: bool) -> bool:
-        kingLoc = (-1,-1)
         for y in range(0,8):
             for x in range(0,8):
                 piece = self.board[y][x]
-                if piece.upper() == "K" and piece.isupper() != whiteKing:
-                    kingLoc = (y,x)
-        for y in range(0,8):
-            for x in range(0,8):
-                piece = self.board[y][x]
+                # The piece that makes the move has to be the same colour as the king in order to stop the checkmate
                 if(piece.isupper() != whiteKing):
                     for yy in range(0,8):
                         for xx in range(0,8):
-                            if self.isMoveShapeLegal((y,x),(yy,xx), self.board[yy][xx] != "") and self.isMoveBlocked((y,x),(yy,xx))  and not (self.isCheckAfterMove((y,x),(yy,xx),whiteKing)):
+                            # if the move is legal and not blocked and the king is not in check after the move then it is not checkmate
+                            if self.isMoveShapeLegal((y,x),(yy,xx), self.board[yy][xx] != "") \
+                                    and not self.isMoveBlocked((y,x),(yy,xx))  \
+                                    and not (self.isCheckAfterMove((y, x),(yy,xx),whiteKing)):
                                 return False
         return True
 
+    # checks if the given king is in check after a hypothetical check
     def isCheckAfterMove(self, fromTuple: tuple, toTuple: tuple, whiteKing: bool) -> bool:
-        value = False
-        movedPiece = self.board[fromTuple[0]][fromTuple[1]]
         temp = self.board[toTuple[0]][toTuple[1]]
         self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
         self.board[fromTuple[0]][fromTuple[1]] = ""
-        # if the king is in check after the move then the move is invalid
+
         value = self.isKingInCheck(whiteKing)
+        # the pieces are moved back to where they were before, but we know know if this move will put the given king in check
         self.board[fromTuple[0]][fromTuple[1]] = self.board[toTuple[0]][toTuple[1]]
         self.board[toTuple[0]][toTuple[1]] = temp
         return value
@@ -154,12 +155,14 @@ class Board:
         if takenPiece != "":
             if movedPiece.isupper() == takenPiece.isupper():
                 return False
-        # if shape is legal, if the move is not blocked and if your king is not blcoked after the move
-        if self.isMoveShapeLegal(fromTuple, toTuple, takenPiece != "") and not self.isMoveBlocked(fromTuple, toTuple) and not self.isCheckAfterMove(fromTuple, toTuple, not movedPiece.isupper()):
+        # if shape is legal, if the move is not blocked and if your king is not in check after the move then the move is made
+        if self.isMoveShapeLegal(fromTuple, toTuple, takenPiece != "") and not self.isMoveBlocked(fromTuple, toTuple) \
+                and not self.isCheckAfterMove(fromTuple, toTuple, not movedPiece.isupper()):
             self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
             self.board[fromTuple[0]][fromTuple[1]] = ""
             # if a pawn has reached other side of board
             if (movedPiece == "p" and toTuple[0] == 7) or (movedPiece == "P" and toTuple[0] == 0):
+                # runs until a valid piece is selected
                 while True:
                     upgrade = input("Enter N, B, Q or R")
                     if len(upgrade) == 1:

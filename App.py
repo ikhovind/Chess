@@ -8,7 +8,6 @@ print("Welcome to chess, see-through pieces at the bottom are white and move fir
 
 whiteturn = True
 
-
 def getinputsquare(prompt: str) -> str:
     while True:
         move = input(prompt + "\n")
