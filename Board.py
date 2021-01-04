@@ -1,3 +1,6 @@
+import re
+import Pieces
+
 class Board:
     board = [
         ["r", "n", "b", "q", "k", "b", "n", "r"],
@@ -15,6 +18,7 @@ class Board:
 
     def translateLocation(self, location: str) -> tuple:
         y = int(location[1]) - 1
+        # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
         x = ord(location[0]) - 65
         return (y,x)
 
@@ -94,7 +98,6 @@ class Board:
                 return True
         return False
 
-    #TODO make it possible but not necessary to have kingLoc as a parameter
     def isKingInCheck(self, whiteKing: bool):
         kingLoc = (-1,-1)
         for y in range(0,8):
@@ -128,10 +131,9 @@ class Board:
                                 return False
         return True
 
-    def isCheckAfterMove(self, fromTuple: tuple, toTuple: tuple, whiteKing: bool):
+    def isCheckAfterMove(self, fromTuple: tuple, toTuple: tuple, whiteKing: bool) -> bool:
         value = False
         movedPiece = self.board[fromTuple[0]][fromTuple[1]]
-        # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
         temp = self.board[toTuple[0]][toTuple[1]]
         self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
         self.board[fromTuple[0]][fromTuple[1]] = ""
@@ -140,7 +142,6 @@ class Board:
         self.board[fromTuple[0]][fromTuple[1]] = self.board[toTuple[0]][toTuple[1]]
         self.board[toTuple[0]][toTuple[1]] = temp
         return value
-
 
     def move(self, fromLoc: str, toLoc: str):
         fromTuple = self.translateLocation(fromLoc)
@@ -152,21 +153,34 @@ class Board:
         # Cannot take a piece of the same color
         if takenPiece != "":
             if movedPiece.isupper() == takenPiece.isupper():
-                return
-
+                return False
+        # if shape is legal, if the move is not blocked and if your king is not blcoked after the move
         if self.isMoveShapeLegal(fromTuple, toTuple, takenPiece != "") and not self.isMoveBlocked(fromTuple, toTuple) and not self.isCheckAfterMove(fromTuple, toTuple, not movedPiece.isupper()):
-            # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
             self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
             self.board[fromTuple[0]][fromTuple[1]] = ""
+            # if a pawn has reached other side of board
+            if (movedPiece == "p" and toTuple[0] == 7) or (movedPiece == "P" and toTuple[0] == 0):
+                while True:
+                    upgrade = input("Enter N, B, Q or R")
+                    if len(upgrade) == 1:
+                        if re.search("[N,B,Q,R]", upgrade):
+                            self.board[toTuple[0]][toTuple[1]] = upgrade.upper() if (movedPiece.isupper()) else upgrade.lower()
+                            break
+            return True
+        return False
+
+    def isPieceWhite(self, fromLoc:str) -> bool:
+        fromTuple = self.translateLocation(fromLoc)
+        char = self.board[fromTuple[0]][fromTuple[1]]
+        return char.isupper()
 
     def __str__(self) -> str:
         answer = ""
-        for i in range(0, 8):
+        for i in range(7, -1, -1):
             for j in range(0, 8):
                 if self.board[i][j] == "":
-                    answer += " "
+                    answer += "        "
                 else:
-                    answer += self.board[i][j]
-            if (i < 7):
-                answer += "\n"
+                    answer += Pieces.PT[self.board[i][j]].value + "      "
+            answer += "\n"
         return answer
