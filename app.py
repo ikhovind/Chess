@@ -2,13 +2,10 @@ from Board import Board
 
 b = Board()
 
-b.move("A2", "A4")
-b.move("A1", "A3")
-#b.move("A3", "D3")
-b.move("E7", "E5")
-b.move("E8", "E7")
-b.move("E7", "D6")
-b.move("A3", "D3")
-b.move("D6", "C5")
+b.move("E2", "E4")
+b.move("F1", "C4")
+b.move("D1", "F3")
+b.move("F3", "F7")
+print(b.isCheckMate(False))
 
 print(b.__str__())

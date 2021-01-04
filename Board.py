@@ -30,19 +30,20 @@ class Board:
                 for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
                     if self.board[y][fromX] != "":
                         return True
-            if toY - fromY == 0:
+            elif toY - fromY == 0:
                 for x in range(fromX + (1 if (toX > fromX) else -1), toX, 1 if (toX > fromX) else -1):
                     if self.board[fromY][x] != "":
                         return True
             else:
                 for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
-                    for x in range(fromX + (1 if (toX > fromX) else -1), toX, 1 if (toX > fromX) else -1):
-                        if self.board[y][x] != "":
-                            return True
+                    x = fromX + (1 if (toX > fromX) else -1)
+                    if self.board[y][x] != "":
+                        return True
+                    x += 1
         return False
 
     # Assumes that the locations are valid locations on the board
-    def isMoveShapeLegal(self, fromTuple: tuple, toTuple: tuple) -> bool:
+    def isMoveShapeLegal(self, fromTuple: tuple, toTuple: tuple, takes: bool) -> bool:
         fromY = fromTuple[0]
         fromX = fromTuple[1]
         toY = toTuple[0]
@@ -77,18 +78,23 @@ class Board:
                 return False
         # if the pawn is white
         if piece == "p":
-            if fromY - toY == -1 and fromX == toX:
+            if not takes and fromY - toY == -1 and fromX == toX:
                 return True
-            if fromY == 1 and fromY - toY == -2 and fromX == toX:
+            if not takes and fromY == 1 and fromY - toY == -2 and fromX == toX:
+                return True
+            if takes and fromY - toY == -1 and abs(fromX - toX) == 1:
                 return True
         # if the pawn is black
         if piece == "P":
-            if fromY - toY == 1 and fromX == toX:
+            if not takes and fromY - toY == 1 and fromX == toX:
                 return True
-            if fromY == 6 and fromY - toY == 2 and fromX == toX:
+            if not takes and fromY == 6 and fromY - toY == 2 and fromX == toX:
+                return True
+            if takes and fromY - toY == 1 and abs(fromX - toX) == 1:
                 return True
         return False
 
+    #TODO make it possible but not necessary to have kingLoc as a parameter
     def isKingInCheck(self, whiteKing: bool):
         kingLoc = (-1,-1)
         for y in range(0,8):
@@ -101,10 +107,39 @@ class Board:
                 piece = self.board[y][x]
                 # if the piece is upper case then it is black and can check the white king
                 # if the piece is lowercase then it is white and can check the black king
-                if piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc) and not self.isMoveBlocked((y,x), kingLoc):
-                    print((y,x))
+                if piece.isupper() == whiteKing and self.isMoveShapeLegal((y,x),kingLoc, True) and not self.isMoveBlocked((y,x), kingLoc):
                     return True
         return False
+
+    def isCheckMate(self, whiteKing: bool) -> bool:
+        kingLoc = (-1,-1)
+        for y in range(0,8):
+            for x in range(0,8):
+                piece = self.board[y][x]
+                if piece.upper() == "K" and piece.isupper() != whiteKing:
+                    kingLoc = (y,x)
+        for y in range(0,8):
+            for x in range(0,8):
+                piece = self.board[y][x]
+                if(piece.isupper() != whiteKing):
+                    for yy in range(0,8):
+                        for xx in range(0,8):
+                            if self.isMoveShapeLegal((y,x),(yy,xx), self.board[yy][xx] != "") and self.isMoveBlocked((y,x),(yy,xx))  and not (self.isCheckAfterMove((y,x),(yy,xx),whiteKing)):
+                                return False
+        return True
+
+    def isCheckAfterMove(self, fromTuple: tuple, toTuple: tuple, whiteKing: bool):
+        value = False
+        movedPiece = self.board[fromTuple[0]][fromTuple[1]]
+        # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
+        temp = self.board[toTuple[0]][toTuple[1]]
+        self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
+        self.board[fromTuple[0]][fromTuple[1]] = ""
+        # if the king is in check after the move then the move is invalid
+        value = self.isKingInCheck(whiteKing)
+        self.board[fromTuple[0]][fromTuple[1]] = self.board[toTuple[0]][toTuple[1]]
+        self.board[toTuple[0]][toTuple[1]] = temp
+        return value
 
 
     def move(self, fromLoc: str, toLoc: str):
@@ -119,16 +154,10 @@ class Board:
             if movedPiece.isupper() == takenPiece.isupper():
                 return
 
-        if self.isMoveShapeLegal(fromTuple, toTuple) and not self.isMoveBlocked(fromTuple, toTuple):
+        if self.isMoveShapeLegal(fromTuple, toTuple, takenPiece != "") and not self.isMoveBlocked(fromTuple, toTuple) and not self.isCheckAfterMove(fromTuple, toTuple, not movedPiece.isupper()):
             # 65 is ascii value of A, converts A into 0 to get board index but still use chess notation
-            temp = self.board[toTuple[0]][toTuple[1]]
             self.board[toTuple[0]][toTuple[1]] = self.board[fromTuple[0]][fromTuple[1]]
             self.board[fromTuple[0]][fromTuple[1]] = ""
-            # if the king is in check after the move then the move is invalid
-            if self.isKingInCheck(not movedPiece.isupper()):
-                self.board[fromTuple[0]][fromTuple[1]] = self.board[toTuple[0]][toTuple[1]]
-                self.board[toTuple[0]][toTuple[1]] = temp
-
 
     def __str__(self) -> str:
         answer = ""
