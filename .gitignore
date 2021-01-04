@@ -6,10 +6,28 @@ __pycache__/
 # C extensions
 *.so
 
+
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+.idea/artifacts
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/modules.xml
+.idea/*.iml
+.idea/modules*.iml
+*.ipr
 # Distribution / packaging
 .Python
 build/
+venv/
 develop-eggs/
+.idea/* 
 dist/
 downloads/
 eggs/
@@ -103,12 +121,9 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
 env/
-venv/
 ENV/
 env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject
