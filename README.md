@@ -1,7 +1,7 @@
 # Chess
 
 ## Task  - Build a chess app
-[Task](https://github.com/ikhovind/IDATT2101-Algdat/blob/master/Oevinger/Oeving1/rek_opg_bb.pdf)
+[Task](Sjakk.pdf)
 
-[My answer](https://github.com/ikhovind/IDATT2101-Algdat/tree/master/Oevinger/Oeving1)
-oppg211.cpp & oppg223.cpp are my finished task
+Does not take into account drawn games, nor castling and en passant
+
