@@ -30,6 +30,15 @@ class Board:
         toX = toLoc[1]
         piece = self.board[fromY][fromX].upper()
 
+        movedPiece = self.board[fromLoc[0]][fromLoc[1]]
+        takenPiece = self.board[toLoc[0]][toLoc[1]]
+
+        # Cannot take a piece of the same color
+        if takenPiece != "":
+            if movedPiece.isupper() == takenPiece.isupper():
+                return True
+
+
         if piece != "N":
             if toX - fromX == 0:
                 for y in range(fromY + (1 if (toY > fromY) else -1), toY, 1 if (toY > fromY) else -1):
@@ -117,20 +126,20 @@ class Board:
         return False
 
     # checks all possible moves to see if there is some way to get the king out of check
-    def isCheckMate(self, whiteKing: bool) -> bool:
+    def isanymovelegal(self, whiteKing: bool) -> bool:
         for y in range(0,8):
             for x in range(0,8):
                 piece = self.board[y][x]
-                # The piece that makes the move has to be the same colour as the king in order to stop the checkmate
-                if(piece.isupper() != whiteKing):
+                # if it is upper then it is black, not upper then it is white
+                if piece.isupper() != whiteKing:
                     for yy in range(0,8):
                         for xx in range(0,8):
                             # if the move is legal and not blocked and the king is not in check after the move then it is not checkmate
-                            if self.isMoveShapeLegal((y,x),(yy,xx), self.board[yy][xx] != "") \
-                                    and not self.isMoveBlocked((y,x),(yy,xx))  \
-                                    and not (self.isCheckAfterMove((y, x),(yy,xx),whiteKing)):
-                                return False
-        return True
+                            if self.isMoveShapeLegal((y, x),(yy, xx), self.board[yy][xx] != "") \
+                                    and not self.isMoveBlocked((y, x),(yy, xx))  \
+                                    and not self.isCheckAfterMove((y, x), (yy, xx), whiteKing):
+                                return True
+        return False
 
     # checks if the given king is in check after a hypothetical check
     def isCheckAfterMove(self, fromTuple: tuple, toTuple: tuple, whiteKing: bool) -> bool:
@@ -177,6 +186,31 @@ class Board:
         char = self.board[fromTuple[0]][fromTuple[1]]
         return char.isupper()
 
+    def isGameStalemate(self, white: bool):
+        return not self.isanymovelegal(white) and not self.isKingInCheck(white)
+
+    def isLackOfMaterial(self):
+        #checkmate cannot be achieved by only knight or bishop alone, but all other pieces are sufficient
+        checkmatedict =  {
+            "N" : 1,
+            "K" : 0,
+            "B" : 1,
+            "R" : 2,
+            "P" : 2,
+            "Q" : 2
+        }
+        whitePieces = 0
+        blackPieces = 0
+        for y in range(0, 8):
+            for x in range(0, 8):
+                piece = self.board[y][x]
+                if (piece.isupper()):
+                    blackPieces += checkmatedict.get(piece.upper())
+                else:
+                    whitePieces += checkmatedict.get(piece.upper())
+                if blackPieces > 1 or whitePieces > 1:
+                    return False
+        return True
     def __str__(self) -> str:
         answer = ""
         for i in range(7, -1, -1):
@@ -187,3 +221,4 @@ class Board:
                     answer += Pieces.PT[self.board[i][j]].value + "      "
             answer += "\n"
         return answer
+
