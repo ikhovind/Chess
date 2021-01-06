@@ -12,8 +12,13 @@ When entering moves you enter the square you want to move from and the square yo
 Example, scholars mate final move:
 
 White to move
+
 Enter square to move from
+
 F3
+
 Enter square to move to
+
 F7
+
 Checkmate, white won
