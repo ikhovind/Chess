@@ -9,7 +9,7 @@ In order to play the game, simply runn the file App.py and a visual represenatio
 
 When entering moves you enter the square you want to move from and the square you want to move to. Use (A-F) to denote columns and (1-8) to denote rows
 
-### Example, scholars mate final move:
+### Example, scholar's mate final move:
 
 **White to move**
 
