@@ -160,10 +160,6 @@ class Board:
         movedPiece = self.board[fromTuple[0]][fromTuple[1]]
         takenPiece = self.board[toTuple[0]][toTuple[1]]
 
-        # Cannot take a piece of the same color
-        if takenPiece != "":
-            if movedPiece.isupper() == takenPiece.isupper():
-                return False
         # if shape is legal, if the move is not blocked and if your king is not in check after the move then the move is made
         if self.isMoveShapeLegal(fromTuple, toTuple, takenPiece != "") and not self.isMoveBlocked(fromTuple, toTuple) \
                 and not self.isCheckAfterMove(fromTuple, toTuple, not movedPiece.isupper()):
