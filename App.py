@@ -24,11 +24,6 @@ def getinputsquare(prompt: str) -> str:
     return move
 
 
-b.move("E2", "E4")
-b.move("E7", "E5")
-b.move("F1", "C4")
-b.move("D1", "F3")
-
 while True:
     print(b.__str__())
     print(("White " if (whiteturn) else "Black ") + "to move")
